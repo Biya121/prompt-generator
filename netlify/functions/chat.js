@@ -1,18 +1,3 @@
-require('dotenv').config();
-const express = require('express');
-const OpenAI  = require('openai');
-const path    = require('path');
-
-const app = express();
-const port = process.env.PORT || 3000;
-
-// OpenAI 클라이언트 — 키는 .env에서만 로드
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
-
-// ── 시스템 프롬프트 ──────────────────────────────────────────
 const SYSTEM_PROMPT = `당신은 프롬프트 엔지니어링 전문가입니다. 사용자가 AI에게 맡기고 싶은 작업을 설명하면, 아래 4단계 플로우를 반드시 순서대로 진행합니다.
 
 ## 진행 플로우
@@ -97,37 +82,62 @@ const SYSTEM_PROMPT = `당신은 프롬프트 엔지니어링 전문가입니다
 - 각 단계를 반드시 순서대로 진행합니다. 건너뛰지 않습니다.
 - [TECHNIQUE_CARD], [INFO_FIELDS], [PROMPT_RESULT] 태그는 반드시 정확한 형식으로 사용합니다.`;
 
-// ── /api/chat 엔드포인트 ─────────────────────────────────────
-app.post('/api/chat', async (req, res) => {
-  const { messages } = req.body;
+exports.handler = async (event) => {
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Content-Type': 'application/json',
+  };
 
-  if (!messages || !Array.isArray(messages)) {
-    return res.status(400).json({ error: 'messages 배열이 필요합니다.' });
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 200, headers, body: '' };
+  }
+
+  if (event.httpMethod !== 'POST') {
+    return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method Not Allowed' }) };
   }
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        ...messages
-      ],
-      temperature: 0.7,
-      max_tokens: 2000,
+    const { messages } = JSON.parse(event.body);
+
+    if (!messages || !Array.isArray(messages)) {
+      return { statusCode: 400, headers, body: JSON.stringify({ error: 'messages 배열이 필요합니다.' }) };
+    }
+
+    // openai SDK 대신 native fetch 사용 — 외부 패키지 불필요
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          ...messages
+        ],
+        temperature: 0.7,
+        max_tokens: 2000,
+      }),
     });
 
-    const reply = completion.choices[0].message.content;
-    res.json({ reply });
+    if (!response.ok) {
+      const errData = await response.json();
+      throw new Error(errData.error?.message || `OpenAI HTTP ${response.status}`);
+    }
+
+    const data  = await response.json();
+    const reply = data.choices[0].message.content;
+    return { statusCode: 200, headers, body: JSON.stringify({ reply }) };
 
   } catch (err) {
-    console.error('[OpenAI Error]', err.message);
-    const status = err.status || 500;
-    res.status(status).json({ error: err.message });
+    console.error('[Error]', err.message);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: err.message }),
+    };
   }
-});
-
-// ── 서버 시작 ─────────────────────────────────────────────────
-app.listen(port, () => {
-  console.log(`\n🎨 Prompt Atelier`);
-  console.log(`   http://localhost:${port}\n`);
-});
+};
