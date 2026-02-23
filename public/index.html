@@ -4,181 +4,361 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prompt Atelier</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --cream:    #f5f0e8;
-  --warm:     #ede5d4;
-  --paper:    #faf7f2;
-  --ink:      #1a1612;
-  --ink-2:    #4a4238;
-  --ink-3:    #8a7d6e;
-  --ink-4:    #bdb09f;
-  --gold:     #b8923a;
-  --gold-dim: #e8d9b8;
-  --gold-bg:  #fdf8ee;
-  --border:   #ddd3c0;
+  /* ── Tropical Punch 팔레트 ── */
+  --orange:     #FF8243;
+  --orange-dim: #FFD4BA;
+  --orange-bg:  #FFF4EE;
+  --pink:       #FFC0CB;
+  --pink-dim:   #FFE0E6;
+  --pink-bg:    #FFF5F7;
+  --yellow:     #FCE883;
+  --yellow-dim: #FEF5C0;
+  --teal:       #069494;
+  --teal-dim:   #B3E0E0;
+  --teal-bg:    #E6F7F7;
+
+  /* ── 기본 색 ── */
+  --bg:         #FFFDF9;
+  --surface:    #FFFFFF;
+  --sidebar-bg: #1C2B2B;   /* 티얼 계열 다크 */
+  --ink:        #1a2a2a;
+  --ink-2:      #3a5050;
+  --ink-3:      #7a9898;
+  --ink-4:      #b0c8c8;
+  --border:     #EAD8CC;
+  --border-soft:#F0E8E0;
 }
 
-html, body { height: 100%; background: var(--cream); color: var(--ink); font-family: 'DM Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-size: 15px;
+}
 
-.app { display: grid; grid-template-columns: 260px 1fr; height: 100vh; overflow: hidden; }
+.app {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
 
-/* ── 사이드바 ── */
+/* ══════════════════════════════
+   사이드바
+══════════════════════════════ */
 .sidebar {
-  background: var(--ink); display: flex; flex-direction: column;
-  padding: 32px 0 24px; overflow: hidden;
+  background: var(--sidebar-bg);
+  display: flex; flex-direction: column;
+  padding: 36px 0 28px;
+  overflow: hidden;
   border-right: 1px solid rgba(255,255,255,0.04);
 }
 
-.sb-logo { padding: 0 24px 28px; border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 24px; }
-.sb-eyebrow { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--ink-3); margin-bottom: 8px; }
-.sb-title { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 300; color: var(--cream); line-height: 1.2; letter-spacing: 0.3px; }
-.sb-title em { font-style: italic; color: var(--gold); }
-.sb-desc { margin-top: 10px; font-size: 11.5px; font-weight: 300; color: var(--ink-3); line-height: 1.65; }
+.sb-logo {
+  padding: 0 28px 28px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  margin-bottom: 28px;
+}
+
+.sb-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--teal-dim); margin-bottom: 10px;
+}
+
+.sb-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px; font-weight: 300;
+  color: #fff; line-height: 1.2;
+}
+.sb-title em { font-style: italic; color: var(--yellow); }
+
+.sb-desc {
+  margin-top: 10px; font-size: 13px; font-weight: 300;
+  color: var(--ink-3); line-height: 1.65;
+}
 
 /* 스텝 */
-.sb-steps { padding: 0 24px; flex: 1; }
-.sb-steps-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink-3); margin-bottom: 16px; }
+.sb-steps { padding: 0 28px; flex: 1; }
 
-.step-item { display: flex; align-items: flex-start; gap: 12px; position: relative; }
-.step-item:not(:last-child)::after { content: ''; position: absolute; left: 9px; top: 20px; width: 1px; height: 32px; background: rgba(255,255,255,0.06); }
+.sb-steps-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--ink-3); margin-bottom: 18px;
+}
+
+.step-item {
+  display: flex; align-items: flex-start; gap: 14px;
+  position: relative;
+}
+.step-item:not(:last-child)::after {
+  content: ''; position: absolute; left: 10px; top: 22px;
+  width: 1px; height: 34px; background: rgba(255,255,255,0.06);
+}
 
 .step-num {
-  width: 20px; height: 20px; border-radius: 50%;
+  width: 22px; height: 22px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-family: 'DM Mono', monospace; font-size: 9px; flex-shrink: 0; margin-top: 1px;
-  transition: all 0.3s; border: 1px solid rgba(255,255,255,0.12); color: var(--ink-3);
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  flex-shrink: 0; margin-top: 1px; transition: all 0.3s;
+  border: 1px solid rgba(255,255,255,0.12); color: var(--ink-3);
 }
-.step-num.active { background: var(--gold); border-color: var(--gold); color: var(--ink); }
+.step-num.active { background: var(--orange); border-color: var(--orange); color: #fff; }
 .step-num.done   { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.25); }
 
-.step-text { padding-bottom: 24px; }
-.step-name { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.35); transition: color 0.3s; margin-bottom: 2px; }
-.step-name.active { color: var(--cream); }
-.step-sub  { font-size: 11px; font-weight: 300; color: var(--ink-3); line-height: 1.5; }
+.step-text { padding-bottom: 28px; }
+.step-name { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.35); transition: color 0.3s; margin-bottom: 3px; }
+.step-name.active { color: #fff; }
+.step-sub  { font-size: 12px; font-weight: 300; color: var(--ink-3); line-height: 1.5; }
 
 /* 사이드바 하단 */
-.sb-footer { padding: 16px 24px 0; border-top: 1px solid rgba(255,255,255,0.06); }
-.sb-footer-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink-3); margin-bottom: 6px; }
-.sb-footer-val { font-size: 11.5px; color: rgba(255,255,255,0.2); font-weight: 300; }
+.sb-footer {
+  padding: 18px 28px 0;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.sb-footer-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--ink-3); margin-bottom: 5px;
+}
+.sb-footer-val { font-size: 12px; color: rgba(255,255,255,0.2); font-weight: 300; }
 
-/* ── 챗 패널 ── */
-.panel-chat { display: flex; flex-direction: column; background: var(--paper); overflow: hidden; }
+/* ══════════════════════════════
+   챗 패널
+══════════════════════════════ */
+.panel-chat {
+  display: flex; flex-direction: column;
+  background: var(--bg); overflow: hidden;
+}
 
 .chat-header {
-  padding: 18px 36px; border-bottom: 1px solid var(--border);
-  background: var(--paper); flex-shrink: 0;
+  padding: 20px 40px;
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--surface);
+  flex-shrink: 0;
   display: flex; align-items: center; justify-content: space-between;
 }
-.chat-header-title { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 400; color: var(--ink); }
+
+.chat-header-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 19px; font-weight: 400; color: var(--ink);
+}
 
 .new-chat-btn {
-  display: flex; align-items: center; gap: 6px; padding: 6px 14px;
-  border-radius: 4px; border: 1px solid var(--border); background: transparent;
-  font-family: 'DM Sans', sans-serif; font-size: 11.5px; color: var(--ink-3);
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 16px; border-radius: 6px;
+  border: 1px solid var(--border); background: transparent;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink-3);
   cursor: pointer; transition: all 0.2s;
 }
-.new-chat-btn:hover { background: var(--warm); color: var(--ink-2); }
+.new-chat-btn:hover { background: var(--orange-bg); color: var(--orange); border-color: var(--orange-dim); }
 
+/* 메시지 스크롤 영역 */
 .chat-messages {
-  flex: 1; overflow-y: auto; padding: 36px;
-  display: flex; flex-direction: column; gap: 22px;
+  flex: 1; overflow-y: auto;
+  padding: 40px;
+  display: flex; flex-direction: column; gap: 24px;
+  /* 필드 영역이 잘리지 않도록 min-height 제거, overflow-y만 유지 */
 }
-.chat-messages::-webkit-scrollbar { width: 3px; }
+.chat-messages::-webkit-scrollbar { width: 4px; }
 .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-/* ── 메시지 ── */
-.msg { display: flex; gap: 12px; align-items: flex-start; animation: msgIn 0.22s ease both; }
+/* ══════════════════════════════
+   메시지
+══════════════════════════════ */
+.msg { display: flex; gap: 14px; align-items: flex-start; animation: msgIn 0.22s ease both; }
 .msg.user { flex-direction: row-reverse; }
-@keyframes msgIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+@keyframes msgIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
 
 .msg-avatar {
-  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center; font-size: 11px;
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
 }
-.msg-avatar.ai      { background: var(--ink); color: var(--gold); font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 12px; }
-.msg-avatar.user-av { background: var(--warm); color: var(--ink-2); font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 500; }
+.msg-avatar.ai {
+  background: var(--sidebar-bg); color: var(--yellow);
+  font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 14px;
+}
+.msg-avatar.user-av {
+  background: var(--pink); color: var(--ink);
+  font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600;
+}
 
-.msg-body { display: flex; flex-direction: column; gap: 8px; max-width: 74%; }
+/* msg-body: max-width를 넓게, 필드가 충분히 펼쳐지도록 */
+.msg-body {
+  display: flex; flex-direction: column; gap: 10px;
+  max-width: 82%;
+  min-width: 0;
+}
 .msg.user .msg-body { align-items: flex-end; }
 
-.msg-bubble { padding: 12px 16px; font-size: 13.5px; line-height: 1.72; font-weight: 300; }
-.msg.ai   .msg-bubble { background: var(--cream); border: 1px solid var(--border); color: var(--ink-2); border-radius: 0 8px 8px 8px; }
-.msg.user .msg-bubble { background: var(--ink); color: var(--cream); border-radius: 8px 0 8px 8px; }
-
-/* 기법 카드 */
-.technique-card { padding: 14px 16px; background: var(--gold-bg); border: 1px solid var(--gold-dim); border-left: 3px solid var(--gold); border-radius: 4px; }
-.tc-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); margin-bottom: 5px; }
-.tc-name  { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 500; color: var(--ink); margin-bottom: 5px; }
-.tc-desc  { font-size: 12.5px; color: var(--ink-3); line-height: 1.65; font-weight: 300; }
-
-/* 필드 */
-.fields-wrap { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
-.field-label-txt { font-family: 'DM Mono', monospace; font-size: 9.5px; letter-spacing: 0.8px; text-transform: uppercase; color: var(--ink-3); margin-bottom: 4px; }
-.field-inp {
-  width: 100%; padding: 8px 12px; border: 1px solid var(--border);
-  border-radius: 4px; background: var(--paper);
-  font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink);
-  outline: none; font-weight: 300; transition: border-color 0.15s;
+.msg-bubble {
+  padding: 14px 18px;
+  font-size: 15px; line-height: 1.75; font-weight: 300;
 }
-.field-inp:focus { border-color: var(--gold); }
+.msg.ai .msg-bubble {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  color: var(--ink-2);
+  border-radius: 0 10px 10px 10px;
+}
+.msg.user .msg-bubble {
+  background: var(--teal);
+  color: #fff;
+  border-radius: 10px 0 10px 10px;
+}
+
+/* ── 기법 카드 ── */
+.technique-card {
+  padding: 16px 18px;
+  background: var(--orange-bg);
+  border: 1px solid var(--orange-dim);
+  border-left: 4px solid var(--orange);
+  border-radius: 6px;
+}
+.tc-label {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--orange); margin-bottom: 6px;
+}
+.tc-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px; font-weight: 500; color: var(--ink); margin-bottom: 6px;
+}
+.tc-desc { font-size: 14px; color: var(--ink-3); line-height: 1.7; font-weight: 300; }
+
+/* ── 정보 입력 필드 ── */
+.fields-wrap {
+  display: flex; flex-direction: column; gap: 12px;
+  margin-top: 4px;
+  width: 100%;   /* 부모 너비 꽉 채움 */
+}
+
+.field-item { display: flex; flex-direction: column; gap: 5px; }
+
+.field-label-txt {
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px; letter-spacing: 0.8px; text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.field-inp {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; color: var(--ink);
+  outline: none; font-weight: 300;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.field-inp:focus {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px rgba(255,130,67,0.1);
+}
 .field-inp::placeholder { color: var(--ink-4); }
 
 .submit-btn {
-  margin-top: 4px; padding: 9px 18px; background: var(--ink); color: var(--cream);
-  border: none; border-radius: 4px; font-family: 'DM Sans', sans-serif;
-  font-size: 12.5px; font-weight: 500; cursor: pointer; transition: background 0.2s; align-self: flex-start;
+  margin-top: 6px;
+  padding: 12px 22px;
+  background: var(--orange); color: #fff;
+  border: none; border-radius: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+  align-self: flex-start;
 }
-.submit-btn:hover { background: var(--gold); color: var(--ink); }
+.submit-btn:hover { background: #e06d30; }
 .submit-btn:disabled { background: var(--border); color: var(--ink-4); cursor: not-allowed; }
 
-/* 프롬프트 결과 */
+/* ── 프롬프트 결과 ── */
 .prompt-result {
-  padding: 18px 18px 16px; background: #1a1612; border-radius: 6px;
-  font-family: 'DM Mono', monospace; font-size: 11.5px; line-height: 1.85;
-  color: #d4c9b5; position: relative; white-space: pre-wrap; word-break: break-word;
+  padding: 20px 20px 18px;
+  background: var(--sidebar-bg);
+  border-radius: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px; line-height: 1.9;
+  color: #c8e6e6;
+  position: relative; white-space: pre-wrap; word-break: break-word;
+  width: 100%;
 }
-.pr-label { display: block; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; font-family: 'DM Sans', sans-serif; }
+.pr-label {
+  display: block; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--yellow); margin-bottom: 14px; font-family: 'DM Sans', sans-serif;
+}
 .copy-pill {
-  position: absolute; top: 12px; right: 12px;
-  background: rgba(184,146,58,0.12); border: 1px solid rgba(184,146,58,0.25);
-  color: var(--gold); font-size: 10px; padding: 3px 10px; border-radius: 20px;
+  position: absolute; top: 14px; right: 14px;
+  background: rgba(252,232,131,0.12); border: 1px solid rgba(252,232,131,0.25);
+  color: var(--yellow); font-size: 11px; padding: 4px 12px; border-radius: 20px;
   cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s;
 }
-.copy-pill:hover { background: rgba(184,146,58,0.25); }
+.copy-pill:hover { background: rgba(252,232,131,0.25); }
 
-/* 타이핑 */
-.typing { display: inline-flex; gap: 4px; align-items: center; padding: 12px 16px; background: var(--cream); border: 1px solid var(--border); border-radius: 0 8px 8px 8px; }
-.typing-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--ink-4); animation: pulse 1.2s ease infinite; }
+/* ── 타이핑 인디케이터 ── */
+.typing {
+  display: inline-flex; gap: 5px; align-items: center;
+  padding: 14px 18px;
+  background: var(--surface); border: 1px solid var(--border-soft);
+  border-radius: 0 10px 10px 10px;
+}
+.typing-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--orange-dim); animation: pulse 1.2s ease infinite;
+}
 .typing-dot:nth-child(2) { animation-delay: 0.2s; }
 .typing-dot:nth-child(3) { animation-delay: 0.4s; }
 @keyframes pulse { 0%,80%,100%{transform:scale(1);opacity:0.3;} 40%{transform:scale(1.3);opacity:1;} }
 
-/* ── 입력 바 ── */
-.chat-input-bar { padding: 16px 36px 22px; border-top: 1px solid var(--border); background: var(--paper); flex-shrink: 0; }
-.input-wrap { display: flex; gap: 10px; align-items: flex-end; }
+/* ══════════════════════════════
+   입력 바
+══════════════════════════════ */
+.chat-input-bar {
+  padding: 18px 40px 24px;
+  border-top: 1px solid var(--border-soft);
+  background: var(--surface); flex-shrink: 0;
+}
+.input-wrap { display: flex; gap: 12px; align-items: flex-end; }
+
 .chat-textarea {
-  flex: 1; padding: 11px 16px; border: 1px solid var(--border); border-radius: 6px;
-  background: var(--cream); font-family: 'DM Sans', sans-serif;
-  font-size: 13.5px; font-weight: 300; color: var(--ink);
-  resize: none; outline: none; line-height: 1.6; min-height: 44px; max-height: 120px;
+  flex: 1; padding: 13px 18px;
+  border: 1.5px solid var(--border); border-radius: 8px;
+  background: var(--bg);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 300; color: var(--ink);
+  resize: none; outline: none; line-height: 1.6;
+  min-height: 50px; max-height: 130px;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
-.chat-textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(184,146,58,0.07); }
-.chat-textarea::placeholder { color: var(--ink-4); }
-.send-btn {
-  width: 44px; height: 44px; background: var(--ink); border: none; border-radius: 6px;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; transition: all 0.2s; color: var(--cream);
+.chat-textarea:focus {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px rgba(255,130,67,0.08);
 }
-.send-btn:hover   { background: var(--gold); color: var(--ink); }
-.send-btn:disabled { background: var(--border); color: var(--ink-4); cursor: not-allowed; }
-.input-hint { margin-top: 7px; font-size: 11px; color: var(--ink-4); }
+.chat-textarea::placeholder { color: var(--ink-4); }
 
-@media (max-width: 860px) { .app { grid-template-columns: 1fr; } .sidebar { display: none; } }
+.send-btn {
+  width: 50px; height: 50px;
+  background: var(--teal); border: none; border-radius: 8px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all 0.2s; color: #fff;
+}
+.send-btn:hover { background: #057a7a; }
+.send-btn:disabled { background: var(--border); color: var(--ink-4); cursor: not-allowed; }
+
+.input-hint { margin-top: 8px; font-size: 12px; color: var(--ink-4); }
+
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .chat-messages { padding: 24px; }
+  .chat-input-bar { padding: 14px 24px 20px; }
+}
 </style>
 </head>
 <body>
@@ -187,8 +367,8 @@ html, body { height: 100%; background: var(--cream); color: var(--ink); font-fam
   <!-- 사이드바 -->
   <aside class="sidebar">
     <div class="sb-logo">
-      <div class="sb-eyebrow">Prompt Atelier</div>
-      <div class="sb-title">Ask me anything<br><em>It would be yours</em></div>
+      <div class="sb-eyebrow">Prompt Generator</div>
+      <div class="sb-title">Ask me anything<br><em>And it would be yours</em></div>
       <div class="sb-desc">AI에게 원하는 결과를 이끌어내는 최적의 프롬프트를 함께 만듭니다.</div>
     </div>
 
@@ -235,7 +415,7 @@ html, body { height: 100%; background: var(--cream); color: var(--ink); font-fam
     <div class="chat-header">
       <div class="chat-header-title">프롬프트 생성기</div>
       <button class="new-chat-btn" onclick="resetChat()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
         새로 시작
       </button>
     </div>
@@ -258,7 +438,7 @@ html, body { height: 100%; background: var(--cream); color: var(--ink); font-fam
           placeholder="작업을 자유롭게 설명해 주세요…"
           rows="1" onkeydown="handleKey(event)"></textarea>
         <button class="send-btn" id="sendBtn" onclick="sendMessage()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="22" y1="2" x2="11" y2="13"/>
             <polygon points="22 2 15 22 11 13 2 9 22 2"/>
           </svg>
@@ -274,7 +454,6 @@ let conversationHistory = [];
 let isLoading = false;
 let currentStep = 1;
 
-// ── 엔드포인트 — netlify.toml의 redirect로 /api/chat → /.netlify/functions/chat
 const API_ENDPOINT = '/.netlify/functions/chat';
 
 // ── 스텝 업데이트 ─────────────────────────────────────────────
@@ -289,12 +468,10 @@ function setStep(n) {
   }
 }
 
-// ── 키 핸들러 ─────────────────────────────────────────────────
 function handleKey(e) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 }
 
-// ── 메시지 전송 ───────────────────────────────────────────────
 function sendMessage() {
   const ta   = document.getElementById('chatInput');
   const text = ta.value.trim();
@@ -315,7 +492,6 @@ function appendUserMsg(text) {
   setStep(Math.min(currentStep + 1, 4));
 }
 
-// ── 필드 제출 ─────────────────────────────────────────────────
 function submitFields(wrap, btn) {
   const inputs = wrap.querySelectorAll('.field-inp');
   let summary = '아래 정보를 입력했습니다.\n\n';
@@ -323,7 +499,6 @@ function submitFields(wrap, btn) {
   btn.disabled = true; btn.textContent = '제출됨';
   conversationHistory.push({ role: 'user', content: summary });
 
-  // 사용자 버블로 표시
   const wrap2 = document.getElementById('chatMessages');
   const div = document.createElement('div');
   div.className = 'msg user';
@@ -334,7 +509,6 @@ function submitFields(wrap, btn) {
   callAPI();
 }
 
-// ── API 호출 ──────────────────────────────────────────────────
 async function callAPI() {
   isLoading = true;
   document.getElementById('sendBtn').disabled = true;
@@ -367,7 +541,6 @@ async function callAPI() {
   }
 }
 
-// ── AI 메시지 렌더링 ──────────────────────────────────────────
 function appendAIMsg(content) {
   const wrap = document.getElementById('chatMessages');
   const div  = document.createElement('div');
@@ -397,7 +570,6 @@ function renderAI(body, content) {
     body.appendChild(b);
   }
 
-  // 기법 카드
   if (techMatch) {
     const raw  = techMatch[1].trim();
     const name = (raw.match(/기법명:\s*(.+)/) || [])[1] || '';
@@ -409,7 +581,6 @@ function renderAI(body, content) {
     setStep(2);
   }
 
-  // 정보 입력 필드
   if (fieldsMatch) {
     const lines = fieldsMatch[1].trim().split('\n').filter(l => l.trim());
     const fw = document.createElement('div');
@@ -419,6 +590,7 @@ function renderAI(body, content) {
       const clean = line.replace(/^필드\d+:\s*/, '');
       const [label, ph] = clean.split('|');
       const item = document.createElement('div');
+      item.className = 'field-item';
       item.innerHTML = `
         <div class="field-label-txt">${escHtml((label||'').trim())}</div>
         <input class="field-inp"
@@ -434,9 +606,13 @@ function renderAI(body, content) {
     fw.appendChild(btn);
     body.appendChild(fw);
     setStep(3);
+
+    // 필드가 생기면 스크롤 내리기
+    setTimeout(() => {
+      document.getElementById('chatMessages').scrollTop = 99999;
+    }, 50);
   }
 
-  // 프롬프트 결과
   if (promptMatch) {
     const pt  = promptMatch[1].trim();
     const box = document.createElement('div');
@@ -453,7 +629,6 @@ function renderAI(body, content) {
   }
 }
 
-// ── 타이핑 인디케이터 ─────────────────────────────────────────
 function showTyping() {
   const wrap = document.getElementById('chatMessages');
   const el   = document.createElement('div');
@@ -464,7 +639,6 @@ function showTyping() {
 }
 function hideTyping() { document.getElementById('typingEl')?.remove(); }
 
-// ── 에러 ──────────────────────────────────────────────────────
 function appendError(msg) {
   const wrap = document.getElementById('chatMessages');
   const div  = document.createElement('div');
@@ -474,7 +648,6 @@ function appendError(msg) {
   wrap.scrollTop = wrap.scrollHeight;
 }
 
-// ── 리셋 ──────────────────────────────────────────────────────
 function resetChat() {
   conversationHistory = [];
   setStep(1);
@@ -487,13 +660,11 @@ function resetChat() {
     </div>`;
 }
 
-// ── 텍스트에어리어 자동 높이 ─────────────────────────────────
 document.getElementById('chatInput').addEventListener('input', function() {
   this.style.height = 'auto';
-  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+  this.style.height = Math.min(this.scrollHeight, 130) + 'px';
 });
 
-// ── HTML 이스케이프 ───────────────────────────────────────────
 function escHtml(s) {
   return String(s)
     .replace(/&/g,'&amp;').replace(/</g,'&lt;')
