@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt Atelier</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --cream:    #f5f0e8;
+  --warm:     #ede5d4;
+  --paper:    #faf7f2;
+  --ink:      #1a1612;
+  --ink-2:    #4a4238;
+  --ink-3:    #8a7d6e;
+  --ink-4:    #bdb09f;
+  --gold:     #b8923a;
+  --gold-dim: #e8d9b8;
+  --gold-bg:  #fdf8ee;
+  --border:   #ddd3c0;
+}
+
+html, body { height: 100%; background: var(--cream); color: var(--ink); font-family: 'DM Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+
+.app { display: grid; grid-template-columns: 260px 1fr; height: 100vh; overflow: hidden; }
+
+/* ── 사이드바 ── */
+.sidebar {
+  background: var(--ink); display: flex; flex-direction: column;
+  padding: 32px 0 24px; overflow: hidden;
+  border-right: 1px solid rgba(255,255,255,0.04);
+}
+
+.sb-logo { padding: 0 24px 28px; border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 24px; }
+.sb-eyebrow { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--ink-3); margin-bottom: 8px; }
+.sb-title { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 300; color: var(--cream); line-height: 1.2; letter-spacing: 0.3px; }
+.sb-title em { font-style: italic; color: var(--gold); }
+.sb-desc { margin-top: 10px; font-size: 11.5px; font-weight: 300; color: var(--ink-3); line-height: 1.65; }
+
+/* 스텝 */
+.sb-steps { padding: 0 24px; flex: 1; }
+.sb-steps-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink-3); margin-bottom: 16px; }
+
+.step-item { display: flex; align-items: flex-start; gap: 12px; position: relative; }
+.step-item:not(:last-child)::after { content: ''; position: absolute; left: 9px; top: 20px; width: 1px; height: 32px; background: rgba(255,255,255,0.06); }
+
+.step-num {
+  width: 20px; height: 20px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Mono', monospace; font-size: 9px; flex-shrink: 0; margin-top: 1px;
+  transition: all 0.3s; border: 1px solid rgba(255,255,255,0.12); color: var(--ink-3);
+}
+.step-num.active { background: var(--gold); border-color: var(--gold); color: var(--ink); }
+.step-num.done   { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.25); }
+
+.step-text { padding-bottom: 24px; }
+.step-name { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.35); transition: color 0.3s; margin-bottom: 2px; }
+.step-name.active { color: var(--cream); }
+.step-sub  { font-size: 11px; font-weight: 300; color: var(--ink-3); line-height: 1.5; }
+
+/* 사이드바 하단 */
+.sb-footer { padding: 16px 24px 0; border-top: 1px solid rgba(255,255,255,0.06); }
+.sb-footer-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink-3); margin-bottom: 6px; }
+.sb-footer-val { font-size: 11.5px; color: rgba(255,255,255,0.2); font-weight: 300; }
+
+/* ── 챗 패널 ── */
+.panel-chat { display: flex; flex-direction: column; background: var(--paper); overflow: hidden; }
+
+.chat-header {
+  padding: 18px 36px; border-bottom: 1px solid var(--border);
+  background: var(--paper); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.chat-header-title { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 400; color: var(--ink); }
+
+.new-chat-btn {
+  display: flex; align-items: center; gap: 6px; padding: 6px 14px;
+  border-radius: 4px; border: 1px solid var(--border); background: transparent;
+  font-family: 'DM Sans', sans-serif; font-size: 11.5px; color: var(--ink-3);
+  cursor: pointer; transition: all 0.2s;
+}
+.new-chat-btn:hover { background: var(--warm); color: var(--ink-2); }
+
+.chat-messages {
+  flex: 1; overflow-y: auto; padding: 36px;
+  display: flex; flex-direction: column; gap: 22px;
+}
+.chat-messages::-webkit-scrollbar { width: 3px; }
+.chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ── 메시지 ── */
+.msg { display: flex; gap: 12px; align-items: flex-start; animation: msgIn 0.22s ease both; }
+.msg.user { flex-direction: row-reverse; }
+@keyframes msgIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+
+.msg-avatar {
+  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 11px;
+}
+.msg-avatar.ai      { background: var(--ink); color: var(--gold); font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 12px; }
+.msg-avatar.user-av { background: var(--warm); color: var(--ink-2); font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 500; }
+
+.msg-body { display: flex; flex-direction: column; gap: 8px; max-width: 74%; }
+.msg.user .msg-body { align-items: flex-end; }
+
+.msg-bubble { padding: 12px 16px; font-size: 13.5px; line-height: 1.72; font-weight: 300; }
+.msg.ai   .msg-bubble { background: var(--cream); border: 1px solid var(--border); color: var(--ink-2); border-radius: 0 8px 8px 8px; }
+.msg.user .msg-bubble { background: var(--ink); color: var(--cream); border-radius: 8px 0 8px 8px; }
+
+/* 기법 카드 */
+.technique-card { padding: 14px 16px; background: var(--gold-bg); border: 1px solid var(--gold-dim); border-left: 3px solid var(--gold); border-radius: 4px; }
+.tc-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); margin-bottom: 5px; }
+.tc-name  { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 500; color: var(--ink); margin-bottom: 5px; }
+.tc-desc  { font-size: 12.5px; color: var(--ink-3); line-height: 1.65; font-weight: 300; }
+
+/* 필드 */
+.fields-wrap { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.field-label-txt { font-family: 'DM Mono', monospace; font-size: 9.5px; letter-spacing: 0.8px; text-transform: uppercase; color: var(--ink-3); margin-bottom: 4px; }
+.field-inp {
+  width: 100%; padding: 8px 12px; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--paper);
+  font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink);
+  outline: none; font-weight: 300; transition: border-color 0.15s;
+}
+.field-inp:focus { border-color: var(--gold); }
+.field-inp::placeholder { color: var(--ink-4); }
+
+.submit-btn {
+  margin-top: 4px; padding: 9px 18px; background: var(--ink); color: var(--cream);
+  border: none; border-radius: 4px; font-family: 'DM Sans', sans-serif;
+  font-size: 12.5px; font-weight: 500; cursor: pointer; transition: background 0.2s; align-self: flex-start;
+}
+.submit-btn:hover { background: var(--gold); color: var(--ink); }
+.submit-btn:disabled { background: var(--border); color: var(--ink-4); cursor: not-allowed; }
+
+/* 프롬프트 결과 */
+.prompt-result {
+  padding: 18px 18px 16px; background: #1a1612; border-radius: 6px;
+  font-family: 'DM Mono', monospace; font-size: 11.5px; line-height: 1.85;
+  color: #d4c9b5; position: relative; white-space: pre-wrap; word-break: break-word;
+}
+.pr-label { display: block; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; font-family: 'DM Sans', sans-serif; }
+.copy-pill {
+  position: absolute; top: 12px; right: 12px;
+  background: rgba(184,146,58,0.12); border: 1px solid rgba(184,146,58,0.25);
+  color: var(--gold); font-size: 10px; padding: 3px 10px; border-radius: 20px;
+  cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+}
+.copy-pill:hover { background: rgba(184,146,58,0.25); }
+
+/* 타이핑 */
+.typing { display: inline-flex; gap: 4px; align-items: center; padding: 12px 16px; background: var(--cream); border: 1px solid var(--border); border-radius: 0 8px 8px 8px; }
+.typing-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--ink-4); animation: pulse 1.2s ease infinite; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes pulse { 0%,80%,100%{transform:scale(1);opacity:0.3;} 40%{transform:scale(1.3);opacity:1;} }
+
+/* ── 입력 바 ── */
+.chat-input-bar { padding: 16px 36px 22px; border-top: 1px solid var(--border); background: var(--paper); flex-shrink: 0; }
+.input-wrap { display: flex; gap: 10px; align-items: flex-end; }
+.chat-textarea {
+  flex: 1; padding: 11px 16px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--cream); font-family: 'DM Sans', sans-serif;
+  font-size: 13.5px; font-weight: 300; color: var(--ink);
+  resize: none; outline: none; line-height: 1.6; min-height: 44px; max-height: 120px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.chat-textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(184,146,58,0.07); }
+.chat-textarea::placeholder { color: var(--ink-4); }
+.send-btn {
+  width: 44px; height: 44px; background: var(--ink); border: none; border-radius: 6px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all 0.2s; color: var(--cream);
+}
+.send-btn:hover   { background: var(--gold); color: var(--ink); }
+.send-btn:disabled { background: var(--border); color: var(--ink-4); cursor: not-allowed; }
+.input-hint { margin-top: 7px; font-size: 11px; color: var(--ink-4); }
+
+@media (max-width: 860px) { .app { grid-template-columns: 1fr; } .sidebar { display: none; } }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- 사이드바 -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-eyebrow">Prompt Atelier</div>
+      <div class="sb-title">Ask me anything<br><em>It would be yours</em></div>
+      <div class="sb-desc">AI에게 원하는 결과를 이끌어내는 최적의 프롬프트를 함께 만듭니다.</div>
+    </div>
+
+    <div class="sb-steps">
+      <div class="sb-steps-label">진행 단계</div>
+      <div class="step-item">
+        <div class="step-num active" id="dot-1">1</div>
+        <div class="step-text">
+          <div class="step-name active" id="name-1">작업 파악</div>
+          <div class="step-sub">어떤 일을 맡기고 싶으신가요?</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num" id="dot-2">2</div>
+        <div class="step-text">
+          <div class="step-name" id="name-2">기법 추천</div>
+          <div class="step-sub">가장 잘 맞는 기법을 선택합니다.</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num" id="dot-3">3</div>
+        <div class="step-text">
+          <div class="step-name" id="name-3">정보 입력</div>
+          <div class="step-sub">프롬프트에 필요한 값을 채웁니다.</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num" id="dot-4">4</div>
+        <div class="step-text">
+          <div class="step-name" id="name-4">프롬프트 완성</div>
+          <div class="step-sub">바로 사용 가능한 프롬프트 생성.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sb-footer">
+      <div class="sb-footer-label">API</div>
+      <div class="sb-footer-val">서버에서 안전하게 관리됩니다.</div>
+    </div>
+  </aside>
+
+  <!-- 챗 패널 -->
+  <main class="panel-chat">
+    <div class="chat-header">
+      <div class="chat-header-title">프롬프트 생성기</div>
+      <button class="new-chat-btn" onclick="resetChat()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
+        새로 시작
+      </button>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+      <div class="msg ai">
+        <div class="msg-avatar ai">Ai</div>
+        <div class="msg-body">
+          <div class="msg-bubble">
+            안녕하세요. 저는 프롬프트 작성을 도와드리는 어시스턴트입니다.<br><br>
+            어떤 작업을 AI에게 맡기고 싶으신가요? 하고 싶은 일을 자유롭게 말씀해 주세요.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-input-bar">
+      <div class="input-wrap">
+        <textarea class="chat-textarea" id="chatInput"
+          placeholder="작업을 자유롭게 설명해 주세요…"
+          rows="1" onkeydown="handleKey(event)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+      <div class="input-hint">Enter로 전송 · Shift+Enter로 줄바꿈</div>
+    </div>
+  </main>
+</div>
+
+<script>
+let conversationHistory = [];
+let isLoading = false;
+let currentStep = 1;
+
+// ── 스텝 업데이트 ─────────────────────────────────────────────
+function setStep(n) {
+  currentStep = n;
+  for (let i = 1; i <= 4; i++) {
+    const dot  = document.getElementById('dot-' + i);
+    const name = document.getElementById('name-' + i);
+    if (i < n)  { dot.className = 'step-num done';   name.className = 'step-name'; }
+    if (i === n){ dot.className = 'step-num active'; name.className = 'step-name active'; }
+    if (i > n)  { dot.className = 'step-num';        name.className = 'step-name'; }
+  }
+}
+
+// ── 키 핸들러 ─────────────────────────────────────────────────
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+// ── 메시지 전송 ───────────────────────────────────────────────
+function sendMessage() {
+  const ta   = document.getElementById('chatInput');
+  const text = ta.value.trim();
+  if (!text || isLoading) return;
+  ta.value = ''; ta.style.height = 'auto';
+  appendUserMsg(text);
+  callAPI(text);
+}
+
+function appendUserMsg(text) {
+  conversationHistory.push({ role: 'user', content: text });
+  const wrap = document.getElementById('chatMessages');
+  const div  = document.createElement('div');
+  div.className = 'msg user';
+  div.innerHTML = `<div class="msg-avatar user-av">나</div><div class="msg-body"><div class="msg-bubble">${escHtml(text)}</div></div>`;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+  setStep(Math.min(currentStep + 1, 4));
+}
+
+// ── 필드 제출 ─────────────────────────────────────────────────
+function submitFields(wrap, btn) {
+  const inputs = wrap.querySelectorAll('.field-inp');
+  let summary = '아래 정보를 입력했습니다.\n\n';
+  inputs.forEach(inp => { summary += `${inp.dataset.label}: ${inp.value || '(미입력)'}\n`; });
+  btn.disabled = true; btn.textContent = '제출됨';
+  appendUserMsg(summary);
+  callAPI(summary, false);
+}
+
+// ── API 호출 (/api/chat — 키 노출 없음) ──────────────────────
+async function callAPI(userText, addToHistory = true) {
+  isLoading = true;
+  document.getElementById('sendBtn').disabled = true;
+  showTyping();
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: conversationHistory })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+
+    const data  = await res.json();
+    const reply = data.reply;
+    conversationHistory.push({ role: 'assistant', content: reply });
+    hideTyping();
+    appendAIMsg(reply);
+
+  } catch (e) {
+    hideTyping();
+    appendError(e.message);
+  } finally {
+    isLoading = false;
+    document.getElementById('sendBtn').disabled = false;
+  }
+}
+
+// ── AI 메시지 렌더링 ──────────────────────────────────────────
+function appendAIMsg(content) {
+  const wrap = document.getElementById('chatMessages');
+  const div  = document.createElement('div');
+  div.className = 'msg ai';
+  const bodyId = 'body-' + Date.now();
+  div.innerHTML = `<div class="msg-avatar ai">Ai</div><div class="msg-body" id="${bodyId}"></div>`;
+  wrap.appendChild(div);
+  renderAI(document.getElementById(bodyId), content);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+function renderAI(body, content) {
+  const techMatch   = content.match(/\[TECHNIQUE_CARD\]([\s\S]*?)\[\/TECHNIQUE_CARD\]/);
+  const fieldsMatch = content.match(/\[INFO_FIELDS\]([\s\S]*?)\[\/INFO_FIELDS\]/);
+  const promptMatch = content.match(/\[PROMPT_RESULT\]([\s\S]*?)\[\/PROMPT_RESULT\]/);
+
+  // 태그 제거 후 순수 텍스트
+  let text = content
+    .replace(/\[TECHNIQUE_CARD\][\s\S]*?\[\/TECHNIQUE_CARD\]/g, '')
+    .replace(/\[INFO_FIELDS\][\s\S]*?\[\/INFO_FIELDS\]/g, '')
+    .replace(/\[PROMPT_RESULT\][\s\S]*?\[\/PROMPT_RESULT\]/g, '')
+    .trim();
+
+  if (text) {
+    const b = document.createElement('div');
+    b.className = 'msg-bubble';
+    b.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+    body.appendChild(b);
+  }
+
+  // 기법 카드
+  if (techMatch) {
+    const raw  = techMatch[1].trim();
+    const name = (raw.match(/기법명:\s*(.+)/) || [])[1] || '';
+    const why  = (raw.match(/이유:\s*([\s\S]+)/) || [])[1] || '';
+    const card = document.createElement('div');
+    card.className = 'technique-card';
+    card.innerHTML = `<div class="tc-label">추천 기법</div><div class="tc-name">${escHtml(name.trim())}</div><div class="tc-desc">${escHtml(why.trim())}</div>`;
+    body.appendChild(card);
+    setStep(2);
+  }
+
+  // 정보 입력 필드
+  if (fieldsMatch) {
+    const lines = fieldsMatch[1].trim().split('\n').filter(l => l.trim());
+    const fw = document.createElement('div');
+    fw.className = 'fields-wrap';
+
+    lines.forEach(line => {
+      const clean = line.replace(/^필드\d+:\s*/, '');
+      const [label, ph] = clean.split('|');
+      const item = document.createElement('div');
+      item.innerHTML = `
+        <div class="field-label-txt">${escHtml((label||'').trim())}</div>
+        <input class="field-inp" placeholder="${escHtml((ph||'').trim())}" data-label="${escHtml((label||'').trim())}">`;
+      fw.appendChild(item);
+    });
+
+    const btn = document.createElement('button');
+    btn.className = 'submit-btn';
+    btn.textContent = '프롬프트 생성하기';
+    btn.onclick = () => submitFields(fw, btn);
+    fw.appendChild(btn);
+    body.appendChild(fw);
+    setStep(3);
+  }
+
+  // 프롬프트 결과
+  if (promptMatch) {
+    const pt = promptMatch[1].trim();
+    const box = document.createElement('div');
+    box.className = 'prompt-result';
+    const safeText = escHtml(pt);
+    box.innerHTML = `<span class="pr-label">완성된 프롬프트</span><button class="copy-pill" id="cpbtn">복사</button>${safeText}`;
+    box.querySelector('#cpbtn').onclick = function() {
+      navigator.clipboard.writeText(pt).then(() => {
+        this.textContent = '복사됨 ✓';
+        setTimeout(() => this.textContent = '복사', 1800);
+      });
+    };
+    body.appendChild(box);
+    setStep(4);
+  }
+}
+
+// ── 타이핑 인디케이터 ─────────────────────────────────────────
+function showTyping() {
+  const wrap = document.getElementById('chatMessages');
+  const el   = document.createElement('div');
+  el.className = 'msg ai'; el.id = 'typingEl';
+  el.innerHTML = `<div class="msg-avatar ai">Ai</div><div class="typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+  wrap.appendChild(el);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+function hideTyping() { document.getElementById('typingEl')?.remove(); }
+
+// ── 에러 ──────────────────────────────────────────────────────
+function appendError(msg) {
+  const wrap = document.getElementById('chatMessages');
+  const div  = document.createElement('div');
+  div.className = 'msg ai';
+  div.innerHTML = `<div class="msg-avatar ai">Ai</div><div class="msg-body"><div class="msg-bubble" style="color:#c0392b;">오류: ${escHtml(msg)}</div></div>`;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+// ── 리셋 ──────────────────────────────────────────────────────
+function resetChat() {
+  conversationHistory = [];
+  setStep(1);
+  document.getElementById('chatMessages').innerHTML = `
+    <div class="msg ai">
+      <div class="msg-avatar ai">Ai</div>
+      <div class="msg-body">
+        <div class="msg-bubble">새로 시작합니다. 어떤 작업을 AI에게 맡기고 싶으신가요?</div>
+      </div>
+    </div>`;
+}
+
+// ── 텍스트에어리어 자동 높이 ─────────────────────────────────
+document.getElementById('chatInput').addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
+
+// ── HTML 이스케이프 ───────────────────────────────────────────
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+</script>
+</body>
+</html>
